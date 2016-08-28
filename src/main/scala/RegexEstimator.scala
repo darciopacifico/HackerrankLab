@@ -12,75 +12,112 @@ object RegexEstimator {
       if (lineRemain > 0) {
         val str = sc.nextLine()
         val args: Array[String] = str.split(" ")
-        println(callRegex(args(0)))
+        println(combinatoryRegex(args(0), args(1).toLong))
 
       }
     }
     readInputsAndCallRegex(nTests - 1)
   }
 
-
-
   /*
   3
   ((ab)|(ba))     2     = 2
-  Or(1, Literal(1), Literal(1) )
+  (  1 + 1  )^1
+              0 ou 1
+
+  ((a|bb)*)
+
+
 
   ((a|b)*)        5     = 32
-  Or(*,Literal(1),Literal(1))
-
-
-  ((a|bb)*)        5     = 32
-  Or(*,Literal(1),Literal(1))
+   ( 2 )^5
+  2*2*2*2*2
 
   ((a*)(b(a*)))   100   = 100
-  And(1, Literal(*), And(Literal(1),Literal(*) ))
+
+  100 () * 1 *1
+
 
   */
 
-  def callRegex(txt: String): Regex =
-    callRegex(
-      Regex(List(), List(), false, false),
-      txt.toList,
-      "",
-      List())
+  def combinatoryRegex(txt: String, chars: Long): Long = {
+    val regex: Regex = parseRegex(txt.toList, "", List())
+
+    def combinatoryRegex(regex: Regex, chars: Long, agg: Long): Long = {
+
+      val Regex(cmds,childRegex,isOr,isMany) = regex
 
 
-  def callRegex(regex: Regex, txt: List[Char], cmd: String, regexStack: List[Regex]): Regex = {
 
-    txt match {
+      0l
+
+    }
+
+    combinatoryRegex(regex, chars, 0)
+  }
+
+
+  def parseRegex(txtRegex: List[Char], cmd: String, regexParStack: List[Regex]): Regex = {
+
+    //append command to current regex
+    def appendCommand(regex: Regex): Regex = if (cmd.nonEmpty) regex.copy(cmds = regex.cmds ::: List(cmd)) else regex
+
+
+    txtRegex match {
       case '(' :: cs =>
-        callRegex(
-          Regex(List(), List(), false, false),
-          cs, cmd, regex :: regexStack)
+        val regex = Regex(List(), List(), false, false)
+
+        if (cmd.nonEmpty) {
+          val h = regexParStack.head
+          val t = regexParStack.tail
+          parseRegex(cs, "", regex :: h.copy(cmds = h.cmds ::: List(cmd)) :: t)
+
+        } else {
+          parseRegex(cs, "", regex :: regexParStack)
+        }
 
       case '|' :: cs =>
-        //store commeand into regex
-        val newParentStack: List[Regex] = regexStack
 
-        callRegex(regex.copy(cmds = regex.cmds:::List(cmd), isOr = true), cs, "", newParentStack )
+        val regex = regexParStack.head.copy(isOr = true)
+        val parentTail = regexParStack.tail
+
+        parseRegex(cs, "", appendCommand(regex) :: parentTail)
 
       case ')' :: cs =>
-        //include the command (aa, bb, etc)
-        val regexChild = if(cmd.nonEmpty) regex.copy(cmds = regex.cmds:::List(cmd)) else regex
+        val regex = regexParStack.head
+        val regexStack = regexParStack.tail
 
-        val parentRegex = regexStack.head
+        if (regexStack.nonEmpty) {
+          //nest into the parent
+          val parentRegex = regexStack.head
+          val newParentRegex = parentRegex.copy(childRegex = parentRegex.childRegex ::: List(appendCommand(regex)))
+          parseRegex(cs, "", newParentRegex :: regexStack.tail)
 
-        val newParentRegex = parentRegex.copy(childRegex = parentRegex.childRegex ::: List(regexChild))
+        } else {
+          parseRegex(cs, "", appendCommand(regex) :: regexStack)
+        }
 
-        callRegex(newParentRegex, cs, "", regexStack.tail)
 
       case '*' :: cs =>
-        callRegex(regex.copy(many = true), cs, cmd, regexStack)
+        val regex = regexParStack.head
+        val regexStack = regexParStack.tail
+        parseRegex(cs, cmd, regex.copy(isMany = true) :: regexStack)
 
       case c :: cs =>
-        callRegex(regex, cs, cmd + c, regexStack)
+        val regex = regexParStack.head
+        val regexStack = regexParStack.tail
+        parseRegex(cs, cmd + c, regex :: regexStack)
 
       case Nil =>
+        val regex = regexParStack.head
+        val regexStack = regexParStack.tail
+
+        assert(regexStack == Nil)
+
         regex
     }
   }
 
-  case class Regex(cmds: List[String], childRegex: List[Regex], isOr: Boolean, many: Boolean)
+  case class Regex(cmds: List[String], childRegex: List[Regex], isOr: Boolean, isMany: Boolean)
 
 }

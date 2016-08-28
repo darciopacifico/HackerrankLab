@@ -21,10 +21,26 @@ class RegexEstimatorTest extends FlatSpec with Matchers{
 
   "The Regex Estimator " should "parse correctly " in {
 
+    {
+      val regex = RegexEstimator.combinatoryRegex("((ab)|(ba)))*")
+      println(regex)
+    }
 
-    val regex = RegexEstimator.callRegex("((ab)|(ba))*")
+    {
+      val regex = RegexEstimator.combinatoryRegex("((a|b)*)")
+      println(regex)
+    }
 
-    println(regex)
+    {
+      val regex = RegexEstimator.combinatoryRegex("((a|bb)*)")
+      println(regex)
+    }
+
+    {
+      val regex = RegexEstimator.combinatoryRegex("((a*)(b(a*)))*")
+      println(regex)
+    }
+
 
   }
 
