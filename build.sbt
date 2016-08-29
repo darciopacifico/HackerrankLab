@@ -1,4 +1,4 @@
-name := "LabForScala"
+name := "HackerrankLab"
 
 version := "1.0"
 

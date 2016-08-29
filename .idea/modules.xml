@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/labforscala.iml" filepath="$PROJECT_DIR$/.idea/modules/labforscala.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/labforscala-build.iml" filepath="$PROJECT_DIR$/.idea/modules/labforscala-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hackerranklab.iml" filepath="$PROJECT_DIR$/.idea/modules/hackerranklab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hackerranklab-build.iml" filepath="$PROJECT_DIR$/.idea/modules/hackerranklab-build.iml" />
     </modules>
   </component>
 </project>

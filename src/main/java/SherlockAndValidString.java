@@ -9,12 +9,8 @@ import java.util.Scanner;
 public class SherlockAndValidString {
 
     public static void main(String[] args) {
-
         Scanner sc = new Scanner(System.in);
-
         String str = sc.next();
-
-        //int qtdChar = ('z' - 'a')-1;
 
         Map<Character,Integer> mapChar = new HashMap<>();
 
@@ -28,7 +24,6 @@ public class SherlockAndValidString {
         }
 
         Map<Integer,Integer> groupCount = new HashMap<>();
-
         Collection<Integer> contagens = mapChar.values();
 
         for(Integer contagem:contagens){
@@ -49,8 +44,5 @@ public class SherlockAndValidString {
         }else {
             System.out.println("NO");
         }
-
-
     }
-
 }

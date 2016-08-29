@@ -20,104 +20,86 @@ object RegexEstimator {
   }
 
   /*
-  3
   ((ab)|(ba))     2     = 2
-  (  1 + 1  )^1
-              0 ou 1
-
-  ((a|bb)*)
-
-
-
   ((a|b)*)        5     = 32
-   ( 2 )^5
-  2*2*2*2*2
-
   ((a*)(b(a*)))   100   = 100
-
-  100 () * 1 *1
-
-
   */
 
+  //def parseRegex(txt:String): Regex =parseRegex(txt.toList, "", List(Regex("",Nil,false,false)))
+  def parseRegex(txt: String): Regex = parseRegex(txt.toList, List(Regex()))
+
+
   def combinatoryRegex(txt: String, chars: Long): Long = {
-    val regex: Regex = parseRegex(txt.toList, "", List())
+    val regex: Regex = parseRegex(txt)
 
-    def combinatoryRegex(regex: Regex, chars: Long, agg: Long): Long = {
+    def combinatoryRegex(regex: Regex, min: Long, max: Long, agg: Long): Long = {
 
-      val Regex(cmds,childRegex,isOr,isMany) = regex
+      val res = regex.countCombos(List((1l, chars)))
 
-
+      println(res)
 
       0l
-
     }
 
-    combinatoryRegex(regex, chars, 0)
+    combinatoryRegex(regex, 0, chars, 0)
   }
 
 
-  def parseRegex(txtRegex: List[Char], cmd: String, regexParStack: List[Regex]): Regex = {
-
-    //append command to current regex
-    def appendCommand(regex: Regex): Regex = if (cmd.nonEmpty) regex.copy(cmds = regex.cmds ::: List(cmd)) else regex
-
-
+  def parseRegex(txtRegex: List[Char], regexParStack: List[Regex]): Regex = {
     txtRegex match {
       case '(' :: cs =>
-        val regex = Regex(List(), List(), false, false)
-
-        if (cmd.nonEmpty) {
-          val h = regexParStack.head
-          val t = regexParStack.tail
-          parseRegex(cs, "", regex :: h.copy(cmds = h.cmds ::: List(cmd)) :: t)
-
-        } else {
-          parseRegex(cs, "", regex :: regexParStack)
-        }
+        val nr = Regex()
+        parseRegex(cs, nr :: regexParStack)
 
       case '|' :: cs =>
 
-        val regex = regexParStack.head.copy(isOr = true)
-        val parentTail = regexParStack.tail
+        val hc: Regex = regexParStack.head
+        val tc: List[Regex] = regexParStack.tail
 
-        parseRegex(cs, "", appendCommand(regex) :: parentTail)
-
-      case ')' :: cs =>
-        val regex = regexParStack.head
-        val regexStack = regexParStack.tail
-
-        if (regexStack.nonEmpty) {
-          //nest into the parent
-          val parentRegex = regexStack.head
-          val newParentRegex = parentRegex.copy(childRegex = parentRegex.childRegex ::: List(appendCommand(regex)))
-          parseRegex(cs, "", newParentRegex :: regexStack.tail)
-
+        if (tc.nonEmpty) {
+          val hp = tc.head
+          val tp = tc.tail
+          parseRegex(cs, Regex() :: hp.copy(isOr = true, childRegex = hp.childRegex ::: List(hc)) :: tp)
         } else {
-          parseRegex(cs, "", appendCommand(regex) :: regexStack)
+          parseRegex(cs, hc.copy(isOr = true) :: tc)
         }
 
+      case ')' :: cs =>
+        val hc = regexParStack.head
+        val tc = regexParStack.tail
+
+        if (tc.nonEmpty) {
+          val hp = tc.head
+          val tp = tc.tail
+
+          parseRegex(cs, hp.copy(childRegex = hp.childRegex ::: List(hc)) :: tp)
+
+        } else {
+          parseRegex(cs, List(hc))
+        }
 
       case '*' :: cs =>
-        val regex = regexParStack.head
-        val regexStack = regexParStack.tail
-        parseRegex(cs, cmd, regex.copy(isMany = true) :: regexStack)
+        val h = regexParStack.head
+        parseRegex(cs, h.copy(isMany = true) :: regexParStack.tail)
 
       case c :: cs =>
-        val regex = regexParStack.head
-        val regexStack = regexParStack.tail
-        parseRegex(cs, cmd + c, regex :: regexStack)
+        val h = regexParStack.head
+        parseRegex(cs, h.copy(cmd = h.cmd + c) :: regexParStack.tail)
 
       case Nil =>
-        val regex = regexParStack.head
-        val regexStack = regexParStack.tail
-
-        assert(regexStack == Nil)
-
-        regex
+        regexParStack.head
     }
   }
+}
 
-  case class Regex(cmds: List[String], childRegex: List[Regex], isOr: Boolean, isMany: Boolean)
 
+case class Regex(cmd: String, childRegex: List[Regex], isOr: Boolean, isMany: Boolean) {
+
+  def countCombos(chars: Long, agg: Long): Long = {
+    0l
+  }
+}
+
+case object Regex {
+  def apply(): Regex = Regex("", Nil, false, false)
 }
