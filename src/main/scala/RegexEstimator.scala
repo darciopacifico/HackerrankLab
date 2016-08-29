@@ -32,16 +32,10 @@ object RegexEstimator {
   def combinatoryRegex(txt: String, chars: Long): Long = {
     val regex: Regex = parseRegex(txt)
 
-    def combinatoryRegex(regex: Regex, min: Long, max: Long, agg: Long): Long = {
 
-      val res = regex.countCombos(List((1l, chars)))
 
-      println(res)
+    0l
 
-      0l
-    }
-
-    combinatoryRegex(regex, 0, chars, 0)
   }
 
 
