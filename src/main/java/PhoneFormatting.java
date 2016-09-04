@@ -1,18 +1,18 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class CodilityPhoneFormatting {
+public class PhoneFormatting {
 
 
     public static void main(String[] args) {
 
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 8361").equals("004-448-555-583-61"));
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 83613").equals("004-448-555-583-613"));
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 836145").equals("004-448-555-583-61-45"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 8361").equals("004-448-555-583-61"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 83613").equals("004-448-555-583-613"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 836145").equals("004-448-555-583-61-45"));
 
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 8361"));
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 83613"));
-        System.out.println(new CodilityPhoneFormatting().solution("00-44  48 5555 836145"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 8361"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 83613"));
+        System.out.println(new PhoneFormatting().solution("00-44  48 5555 836145"));
 
         //004-448-555-583-61
         //004-448-555-583-61

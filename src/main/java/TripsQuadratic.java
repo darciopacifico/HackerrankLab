@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CodilityVacationTripsQuadratic {
+public class TripsQuadratic {
 
     public static void main(String[] args) {
         System.out.println(solution(new int[]{7, 3, 7, 3, 1, 3, 4, 1}));
