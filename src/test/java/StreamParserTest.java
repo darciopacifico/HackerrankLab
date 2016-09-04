@@ -9,6 +9,9 @@ import static parser.StreamParser.parseAsStream;
 public class StreamParserTest {
 
 
+    public static void main(String[] args) {
+
+    }
     public void testStateMachine(){
 
     /*    assertEquals(parseAsStream("aAbBABacfe"), Optional.of('e'));

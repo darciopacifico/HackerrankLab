@@ -1,99 +1,249 @@
-import java.util.Scanner
 
-import scala.collection.immutable.Stack
 
 object RegexEstimator {
 
-  def main(args: Array[String]) {
-    val sc = new Scanner(System.in)
-    val nTests = sc.nextInt()
+  sealed trait TType
 
-    def readInputsAndCallRegex(lineRemain: Int): Unit = {
-      if (lineRemain > 0) {
-        val str = sc.nextLine()
-        val args: Array[String] = str.split(" ")
-        println(combinatoryRegex(args(0), args(1).toLong))
+  case object STAR extends TType
 
-      }
+  case object OR extends TType
+
+  case object AND extends TType
+
+  case object SINGLE extends TType
+
+
+  object Transition {
+    def apply() = new Transition("", null, false)
+  }
+
+  class Transition(var str: String, var saida: State, var isMany: Boolean) {
+    def nonEmpty: Boolean = str != null && str.nonEmpty
+
+    def +(c: Char): Transition = {
+      str = str + c
+      this
     }
-    readInputsAndCallRegex(nTests - 1)
-  }
 
-  /*
-  ((ab)|(ba))     2     = 2
-  ((a|b)*)        5     = 32
-  ((a*)(b(a*)))   100   = 100
-  */
+    def getType(): (List[Transition], TType) = {
 
-  //def parseRegex(txt:String): Regex =parseRegex(txt.toList, "", List(Regex("",Nil,false,false)))
-  def parseRegex(txt: String): Regex = parseRegex(txt.toList, List(Regex()))
+      def getParts(regex: List[Char], part: Transition, par: Integer, parts: List[Transition], isOr: Boolean): (List[Transition], Boolean) = {
 
+        if (part.str.isEmpty && parts.isEmpty && par == 0)
+          println("Regex: " + new String(regex.toArray))
 
-  def combinatoryRegex(txt: String, chars: Long): Long = {
-    val regex: Regex = parseRegex(txt)
+        regex match {
+          case '(' :: cs =>
+            if (par == 0)
+              getParts(cs, Transition(), par + 1, parts, isOr)
+            else
+              getParts(cs, part + '(', par + 1, parts, isOr)
 
+          case ')' :: cs =>
+            val nPar = par - 1
+            if (nPar == 0)
+              getParts(cs, Transition(), nPar, (if (part.nonEmpty) List(part) else Nil) ::: parts, isOr)
+            else if (nPar > 0)
+              getParts(cs, part + ')', nPar, parts, isOr)
+            else
+              throw new IllegalArgumentException("Unbalanced regex expression!")
 
+          case '|' :: cs =>
+            if (par == 0)
+              getParts(cs, Transition(), par, (if (part.nonEmpty) List(part) else Nil) ::: parts, true)
+            else
+              getParts(cs, part + '|', par, parts, isOr)
 
-    0l
+          case '*' :: cs =>
+            if (par == 0) {
 
-  }
+              val newParts = (if (part.nonEmpty) List(part) else Nil) ::: parts
+              newParts.head.isMany = true
+              getParts(cs, Transition(), par, newParts, isOr)
 
+            } else
+              getParts(cs, part + '*', par, parts, isOr)
 
-  def parseRegex(txtRegex: List[Char], regexParStack: List[Regex]): Regex = {
-    txtRegex match {
-      case '(' :: cs =>
-        val nr = Regex()
-        parseRegex(cs, nr :: regexParStack)
+          case c :: cs =>
+            getParts(cs, part + c, par, parts, isOr)
 
-      case '|' :: cs =>
+          case Nil =>
 
-        val hc: Regex = regexParStack.head
-        val tc: List[Regex] = regexParStack.tail
+            ((if (part.nonEmpty) List(part) else Nil) ::: parts, isOr)
+        }
+      }
 
-        if (tc.nonEmpty) {
-          val hp = tc.head
-          val tp = tc.tail
-          parseRegex(cs, Regex() :: hp.copy(isOr = true, childRegex = hp.childRegex ::: List(hc)) :: tp)
+      val (parts: List[Transition], isOr: Boolean) =
+        if (isNotSingle(str)) {
+          getParts(str.toList, new Transition("", null, false), 0, Nil, isOr = false)
         } else {
-          parseRegex(cs, hc.copy(isOr = true) :: tc)
+          (new Transition(str, null, false) :: Nil, false)
         }
 
-      case ')' :: cs =>
-        val hc = regexParStack.head
-        val tc = regexParStack.tail
+      val ttype =
+        if (parts.length > 1)
+          if (isOr)
+            OR
+          else
+            AND
+        else if (parts.length == 1)
+          if (parts.head.isMany)
+            STAR
+          else
+            SINGLE
+        else
+          throw new IllegalArgumentException("Error trying to breakdown into parts! parts.size=0 !!")
 
-        if (tc.nonEmpty) {
-          val hp = tc.head
-          val tp = tc.tail
+      (parts, ttype)
 
-          parseRegex(cs, hp.copy(childRegex = hp.childRegex ::: List(hc)) :: tp)
+    }
+  }
+
+  class State(var saidas: Set[Transition])
+
+  def main(args: Array[String]) {
+    // ((a*)(b(a*)))
+    // a*(b)
+    // ((a|b)*)
+    // (a|b)*
+    // (a)*
+    // a*
+    // (a*)
+    // (((a*)))
+
+
+    val start: State = parseRegex("a|(bc)*")
+    println(start)
+    /*
+
+        val a = new State(Set())
+        val b = new State(Set())
+        val t = new Transition("zzz", null, false)
+        val f = new Transition("fim", null, false)
+
+
+        a.saidas = Set(t)
+        t.saida = b
+        b.saidas = Set(f)
+
+        parseRegexStar(a, t, b)
+
+        println(a)
+    */
+
+
+  }
+
+  def parseRegex(regex: String): State = {
+    val end = new State(Set())
+    val transition = new Transition(regex, null, false)
+    val start = new State(Set())
+    parseRegex(start, transition, end)
+  }
+
+  def parseRegex(start: State, origTr: Transition, end: State): State = {
+
+
+    origTr.getType() match {
+
+      case (trs: List[Transition], STAR) =>
+        parseRegexStar(start, trs.head, end)
+
+      case (trs, OR) =>
+        parseRegexOr(start, trs, end)
+
+      case (trs, AND) =>
+        parseRegexAnd(start, trs, end)
+
+      case (trs, SINGLE) =>
+        parseRegexSingle(start, trs.head, end)
+
+    }
+    start
+  }
+
+  def parseRegexStar(a: State, transition: Transition, b: State): Unit = {
+
+    val a2 = new State(Set())
+    val b2 = new State(Set())
+
+    val e1 = new Transition("", null, false)
+    val e2 = new Transition("", null, false)
+    val e3 = new Transition("", null, false)
+    val e4 = new Transition("", null, false)
+
+    a2.saidas = Set(transition)
+    transition.saida = b2
+
+    a.saidas = Set(e1, e2)
+    b2.saidas = Set(e4)
+    b.saidas = b.saidas ++ Set(e3) // todo concat??
+
+    e1.saida = a2
+    e2.saida = b
+    e3.saida = a2
+    e4.saida = b
+
+    parseRegex(a2, transition, b2)
+  }
+
+  def parseRegexOr(start: State, transitions: List[Transition], end: State) = {
+
+    transitions.foreach { t =>
+      parseRegex(start,t,end)
+      start.saidas = start.saidas + t
+      t.saida=end
+
+    }
+
+
+  }
+
+  def parseRegexAnd(start: State, transitions: List[Transition], end: State): Unit = {
+
+    transitions match {
+
+      case t :: ts =>
+
+        if (ts.nonEmpty) {
+          val interState = new State(Set())
+          parseRegex(start, t, interState)
+          parseRegexAnd(interState, ts, end)
 
         } else {
-          parseRegex(cs, List(hc))
+          parseRegex(start, t, end)
         }
-
-      case '*' :: cs =>
-        val h = regexParStack.head
-        parseRegex(cs, h.copy(isMany = true) :: regexParStack.tail)
-
-      case c :: cs =>
-        val h = regexParStack.head
-        parseRegex(cs, h.copy(cmd = h.cmd + c) :: regexParStack.tail)
 
       case Nil =>
-        regexParStack.head
+        println("empty transition")
     }
+
+
   }
-}
+
+  def parseRegexSingle(start: State, transition: Transition, end: State): Unit = {
+
+    if (isNotSingle(transition)) {
+      parseRegex(start, transition, end)
+
+    } else {
+      //start.saidas = Set(transition)
+      //transition.saida = end
+
+    }
 
 
-case class Regex(cmd: String, childRegex: List[Regex], isOr: Boolean, isMany: Boolean) {
-
-  def countCombos(chars: Long, agg: Long): Long = {
-    0l
   }
-}
 
-case object Regex {
-  def apply(): Regex = Regex("", Nil, false, false)
+  def isNotSingle(transition: Transition): Boolean = {
+    val str: String = transition.str
+    isNotSingle(str)
+  }
+
+  def isNotSingle(str: String): Boolean = {
+    str.contains('*') ||
+      str.contains('(') ||
+      str.contains(')') ||
+      str.contains('|')
+  }
 }
