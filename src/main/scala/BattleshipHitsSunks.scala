@@ -6,7 +6,14 @@
 object BattleshipHitsSunks {
 
   def main(args: Array[String]) {
-    println(solution(4, "1B 2C,2D 4D", "2B 2D 3D 4D 4A 1B 1C 2C"))
+
+    println(solution(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D 2E"))
+    println(solution(8, "1A 8B,1D 2E", "1D 1E 2D 2E"))
+    println(solution(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D"))
+    println(solution(8, "1A 8B,1D 2E", "1H 8H"))
+    println(solution(8, "1A 8B,1D 2E", "1A 8A"))
+    println(solution(8, "1A 8B,1D 2E", "1A 2E"))
+
   }
 
   def solution(n: Int, s: String, t: String): String = {
