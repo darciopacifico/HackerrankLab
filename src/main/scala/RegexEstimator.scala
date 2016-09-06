@@ -187,9 +187,9 @@ object RegexEstimator {
         if (state.isFim) {
           if (qtdChars == 0) {
             count = count + 1
-            println(string.toString)
+            //println(string.toString)
             string.delete(0, string.length())
-            println(string.toString)
+            //println(string.toString)
           }
         } else if (qtdChars >= 0) {
           state.outs.foreach { t =>
@@ -217,11 +217,13 @@ object RegexEstimator {
       estimateRegex(start, qtdChars)
     }
 
-    /*println(countPossibilities("((ab)|(ba))", 2))
+    /*
+    println(countPossibilities("((ab)|(ba))", 2))
     println(countPossibilities("((a|b)*)", 5))
     println(countPossibilities("((b(a*)))", 100))
+    println(countPossibilities("(a*)(b)(a*)", 100))
     */
-    println(countPossibilities("((a*)(b(a*)))", 3))
+    println(countPossibilities("a*(b(a*))", 100))
 
   }
 
