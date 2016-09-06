@@ -102,7 +102,7 @@ object RegexEstimator {
       val e4 = new Transition(true, "", null, false)
 
       a2.outs = a.outs
-      b2.outs = Set(e4,e3)
+      b2.outs = Set(e4, e3)
       a.outs = Set(e1, e2)
       b.outs = b.outs
 
@@ -159,7 +159,11 @@ object RegexEstimator {
           else
             assemblyAnd(a, b, parts)
         } else {
-          assemblySingle(a, b, parts.head)
+          if (parts.head.isStar)
+            assemblyStar(a, b, parts.head)
+          else
+            assemblySingle(a, b, parts.head)
+
         }
       }
     }
@@ -177,15 +181,22 @@ object RegexEstimator {
 
       def estimateRegex(state: State, qtdChars: Integer, string: StringBuffer): Unit = {
 
+        if (qtdChars < 0)
+          string.delete(0, string.length())
+
         if (state.isFim) {
-          if (qtdChars == 0)
+          if (qtdChars == 0) {
             count = count + 1
+            println(string.toString)
+            string.delete(0, string.length())
+            println(string.toString)
+          }
         } else if (qtdChars >= 0) {
           state.outs.foreach { t =>
             if (t.isEpsilon) {
               estimateRegex(t.out, qtdChars, string)
             } else {
-              estimateRegex(t.out, qtdChars - t.str.length, string)
+              estimateRegex(t.out, qtdChars - t.str.length, string.append(t.str))
             }
           }
         }
@@ -206,10 +217,11 @@ object RegexEstimator {
       estimateRegex(start, qtdChars)
     }
 
-    println(countPossibilities("((ab)|(ba))", 2))
+    /*println(countPossibilities("((ab)|(ba))", 2))
     println(countPossibilities("((a|b)*)", 5))
-    println(countPossibilities("((a*)(b(a*)))", 100))
     println(countPossibilities("((b(a*)))", 100))
+    */
+    println(countPossibilities("((a*)(b(a*)))", 3))
 
   }
 
