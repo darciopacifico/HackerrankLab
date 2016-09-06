@@ -13,7 +13,7 @@ public class RegexEstimatorRS {
 
         Digraph d = n.graph;
 
-
+        System.out.println(n.recognizes("a"));
 
 
         System.out.println(n);

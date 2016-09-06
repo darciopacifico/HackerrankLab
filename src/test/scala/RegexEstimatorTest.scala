@@ -18,5 +18,12 @@ And(1, Literal(*), And(Literal(1),Literal(*) ))
 */
 class RegexEstimatorTest extends FlatSpec with Matchers{
 
+  "the regex " should "become a or state machine " in {
+
+
+
+
+
+  }
 
 }
