@@ -6,8 +6,6 @@ object ScalaSolution2 {
 
   def main(args: Array[String]) {
 
-    println("teste 123")
-
   }
 
 }

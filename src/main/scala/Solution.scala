@@ -1,6 +1,6 @@
+import java.util.Scanner
 
-
-object RegexEstimator {
+object Solution {
 
   class State(var name: String, var outs: Set[Transition], val isFim: Boolean = false)
 
@@ -18,13 +18,15 @@ object RegexEstimator {
 
     def getParts(): (List[Transition], Boolean) = {
       def getParts(regex: List[Char], part: Transition, par: Integer, parts: List[Transition], isOr: Boolean): (List[Transition], Boolean) = {
-        //if (part.str.isEmpty && parts.isEmpty && par == 0)
-        //println("Regex: " + new String(regex.toArray))
-
+        /*if (part.str.isEmpty && parts.isEmpty && par == 0)
+          println("Regex: " + new String(regex.toArray))
+*/
         regex match {
           case '(' :: cs =>
-            if (par == 0)
-              getParts(cs, Transition(false), par + 1, parts, isOr)
+            if (par == 0) {
+              val newParts = (if (part.nonEmpty) List(part) else Nil) ::: parts
+              getParts(cs, Transition(false), par + 1, newParts, isOr)
+            }
             else
               getParts(cs, part + '(', par + 1, parts, isOr)
 
@@ -168,62 +170,107 @@ object RegexEstimator {
       }
     }
 
-    /*
-    ((ab)|(ba)) 2
-    ((a|b)*) 5
-    ((a*)(b(a*))) 100
-    */
-
 
     def estimateRegex(start: State, qtdChars: Integer): BigInt = {
 
       var count: BigInt = 0
 
-      def estimateRegex(state: State, qtdChars: Integer, string: StringBuffer): Unit = {
+      def estimateRegex(state: State, qtdChars: Integer): Unit = {
 
-        if (qtdChars < 0)
-          string.delete(0, string.length())
 
         if (state.isFim) {
-          if (qtdChars == 0) {
+          if (qtdChars == 0)
             count = count + 1
-            //println(string.toString)
-            string.delete(0, string.length())
-            //println(string.toString)
-          }
+
         } else if (qtdChars >= 0) {
-          state.outs.foreach { t =>
+          state.outs.toStream.foreach { t =>
             if (t.isEpsilon) {
-              estimateRegex(t.out, qtdChars, string)
+              estimateRegex(t.out, qtdChars)
             } else {
-              estimateRegex(t.out, qtdChars - t.str.length, string.append(t.str))
+              estimateRegex(t.out, qtdChars - t.str.length)
             }
           }
         }
+      }
+      estimateRegex(start, qtdChars)
+      count
+    }
+
+
+    def estimateRegexStack(start: State, qtdChars: Int): BigInt = {
+
+      var count: BigInt = 0
+
+      def estimateRegex(states: List[(State, Int)]): Unit = {
+
+        val nextStates: List[(State, Int)] = states.flatMap { case (s: State, chars: Int) =>
+
+          if (s.isFim) {
+            if (chars == 0) {
+              count = count + 1
+            }
+            Nil
+
+          } else if (chars >= 0) {
+
+
+            s.outs.map { t =>
+              if (t.isEpsilon) {
+                (t.out, chars)
+              } else {
+                (t.out, chars - t.str.length)
+              }
+            }.toList
+
+          } else {
+            Nil
+          }
+
+
+        }
+
+        if (nextStates.nonEmpty)
+          estimateRegex(nextStates)
 
       }
 
-      estimateRegex(start, qtdChars, new StringBuffer())
 
+
+      estimateRegex(List((start, qtdChars)))
       count
     }
 
 
     def countPossibilities(regex: String, qtdChars: Integer): BigInt = {
       val start = new State("inicio", Set())
-
       assemblyNFA(start, new Transition(false, regex, null, false), new State("fim", Set(), true))
-
-      estimateRegex(start, qtdChars)
+      estimateRegexStack(start, qtdChars)
     }
 
     /*
     println(countPossibilities("((ab)|(ba))", 2))
-    println(countPossibilities("((a|b)*)", 5))
+    println(countPossibilities("((a|b)*)", 1))
     println(countPossibilities("((b(a*)))", 100))
     println(countPossibilities("(a*)(b)(a*)", 100))
+    println(countPossibilities("(((((((b|(((b|((a*)b))*)((b|((b*)*))a)))*)|a)*)|b)|(b|b))(a*))", 1))
+    println(countPossibilities("(a*)(b(a*))", 100))
+
     */
-    println(countPossibilities("a*(b(a*))", 100))
+
+
+    val sc = new Scanner(System.in)
+
+    val testes = sc.nextInt()
+
+    for (_ <- 0 until testes) {
+
+      val regex = sc.next()
+      val chars = sc.nextInt()
+      println(countPossibilities(regex, chars.toInt))
+    }
+    /*
+        */
+
 
   }
 
@@ -249,26 +296,3 @@ object RegexEstimator {
     (a2, b2, t1, t2)
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
