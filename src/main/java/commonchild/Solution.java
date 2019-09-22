@@ -23,6 +23,10 @@ public class Solution {
             //s1 = "WEWOUCUIDW";
             //s2 = "FDAGCXGKCW";
 
+            long now3 = System.nanoTime();
+            result = lcs(s1.toCharArray(), s2.toCharArray(), s1.length(), s2.length());
+            System.out.print("chars: result " + result + " time: " + (System.nanoTime() - now3));
+           /*
             for (int i = 5; i < s1.length(); i++) {
                 String ss1 = s1.substring(0, i);
                 String ss2 = s2.substring(0, i);
@@ -34,7 +38,7 @@ public class Solution {
                 long now2 = System.nanoTime();
                 int result2 = lcs2(ss1.toCharArray(), ss2.toCharArray(), ss1.length(), ss2.length());
                 System.out.println(" chars: " + i + " result2: " + result2 + " time: " + (System.nanoTime() - now2));
-            }
+            }*/
 
         } else {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(output_path));
@@ -66,7 +70,12 @@ public class Solution {
 
     static int lcs(char[] X, char[] Y, int m, int n, int[][] memo) {
 
-        if (m > 0 && n > 0 && memo[m - 1][n - 1] > -1) return memo[m - 1][n - 1];
+        if (m > 0 && n > 0 && memo[m - 1][n - 1] > -1) {
+
+            System.out.println(" saving  m:" + (m - 1) + " n:" + (n - 1));
+
+            return memo[m - 1][n - 1];
+        }
 
         int result;
         if (m == 0 || n == 0) {

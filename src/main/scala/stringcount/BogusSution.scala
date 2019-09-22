@@ -1,6 +1,8 @@
+package stringcount
+
 import java.util.Scanner
 
-object Solution {
+object BogusSution {
 
   class State(var name: String, var outs: Set[Transition], val isFim: Boolean = false)
 
@@ -140,12 +142,14 @@ object Solution {
       val (a2: State, b2: State) = generateEpsilons(a, b)
       assemblyNFA(a2, part, b2)
     }
+
     def assemblyOr(a: State, b: State, parts: List[Transition]): Unit = {
       parts.foreach { t =>
         val (a2: State, b2: State) = generateEpsilons(a, b)
         assemblyNFA(a2, t, b2)
       }
     }
+
     def assemblyNFA(a: State, transition: Transition, b: State): Unit = {
       val (parts, isOr) = transition.getParts()
 
@@ -192,6 +196,7 @@ object Solution {
           }
         }
       }
+
       estimateRegex(start, qtdChars)
       count
     }
@@ -233,7 +238,6 @@ object Solution {
           estimateRegex(nextStates)
 
       }
-
 
 
       estimateRegex(List((start, qtdChars)))
@@ -296,3 +300,4 @@ object Solution {
     (a2, b2, t1, t2)
   }
 }
+

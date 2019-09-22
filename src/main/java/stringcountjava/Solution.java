@@ -1,33 +1,138 @@
+package stringcountjava;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by darcio on 9/5/16.
- */
-public class RegexEstimatorRS {
+public class Solution {
 
-    public static void main(String[] args) {
+    /*
+((ab)|(ba)) 2
+((a|b)*) 5
+
+ ((a*|b)(b(a*)))a 100
+ 0000000000111111
+ 0123456789012345
+a2 2
+b5    8
+
+     * Complete the countStrings function below.
+     */
+    static int countStrings(String regex, int chars) {
+        //                 1111111
+        //       01234567890123456
+        regex = "((a*b|ac)d)";
+        NFA nfa = new NFA(regex);
+
+        Digraph graph = nfa.getGraph();
+
+        int interDfa[][] = new int[graph.V()][4];
 
 
-        NFA n = new NFA("(a|b)*");
+        char[] alph = new char[]{'a', 'b', 'c', 'd'};
+
+        for (int i = 0; i < graph.V(); i++) {
+            for (char c : alph) {
+                if (i < regex.length() && regex.charAt(i) == c) {
+                    interDfa[i][c - 97] = i + 1;
+                }
+            }
+
+        }
+
+        Queue<Set<Integer>> consumable = new LinkedList<>();
+        HashSet<Integer> e = new HashSet<>();
+        e.add(0);
+        consumable.add(e);
+
+        Map<Set<Integer>, Map<Character, Set<Integer>>> currMap = new HashMap<>();
+
+        while (!consumable.isEmpty()) {
+            Set<Integer> key = consumable.remove();
+            for (char c : alph) {
 
 
-        Digraph d = n.graph;
+                Set<Integer> newState = new HashSet<>();
+                for (Integer i : key) {
+                    int destino = interDfa[i][c - 97];
+                    Set<Integer> epsilons = graph.epsilons(destino);
+                    newState.addAll(epsilons);
+                    if (!currMap.containsKey(key)) {
+                        currMap.put(key, new HashMap<>());
+                    }
+                    currMap.get(key).put(c, newState);
 
-        System.out.println(n.recognizes("a"));
+                }
+                consumable.add(newState);
+            }
+
+        }
 
 
-        System.out.println(n);
-
+        return 2;
     }
+
+    private Map<Set<Integer>, Map<Character, Set<Integer>>> createDfa(
+            Queue<Set<Integer>> consumable,
+            Map<Set<Integer>, Map<Character, Set<Integer>>> currMap,
+            int[][] interDfa,
+            Digraph digraph) {
+
+        final char[] alph = new char[]{'a', 'b', 'c', 'd'};
+
+
+        return currMap;
+    }
+
+    private static final Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) throws IOException {
+
+
+        String output_path = System.getenv("OUTPUT_PATH");
+
+        if (output_path == null) {
+
+            System.out.println(countStrings("((a*|b)(b(a*)))", 100));
+
+
+            return;
+        }
+
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(output_path));
+
+
+        int t = Integer.parseInt(scanner.nextLine().trim());
+
+        for (int tItr = 0; tItr < t; tItr++) {
+            String[] rl = scanner.nextLine().split(" ");
+
+            String r = rl[0];
+
+            int l = Integer.parseInt(rl[1].trim());
+
+            int result = countStrings(r, l);
+
+            bufferedWriter.write(String.valueOf(result));
+            bufferedWriter.newLine();
+        }
+
+        bufferedWriter.close();
+    }
+
 
 }
 
-
 class NFA {
 
-    public Digraph graph;     // digraph of epsilon transitions
+    public Digraph getGraph() {
+        return graph;
+    }
+
+    private Digraph graph;     // digraph of epsilon transitions
     private String regexp;     // regular expression
-    private int m;             // number of characters in regular expression
+    private final int m;       // number of characters in regular expression
 
     /**
      * Initializes the NFA from the specified regular expression.
@@ -77,7 +182,7 @@ class NFA {
      */
     public boolean recognizes(String txt) {
         DirectedDFS dfs = new DirectedDFS(graph, 0);
-        List<Integer> pc = new ArrayList<Integer>();
+        ArrayList<Integer> pc = new ArrayList<Integer>();
         for (int v = 0; v < graph.V(); v++)
             if (dfs.marked(v)) pc.add(v);
 
@@ -86,7 +191,7 @@ class NFA {
             if (txt.charAt(i) == '*' || txt.charAt(i) == '|' || txt.charAt(i) == '(' || txt.charAt(i) == ')')
                 throw new IllegalArgumentException("text contains the metacharacter '" + txt.charAt(i) + "'");
 
-            List<Integer> match = new ArrayList<Integer>();
+            ArrayList<Integer> match = new ArrayList<Integer>();
             for (int v : pc) {
                 if (v == m) continue;
                 if ((regexp.charAt(v) == txt.charAt(i)) || regexp.charAt(v) == '.')
@@ -107,101 +212,15 @@ class NFA {
         return false;
     }
 
-
 }
 
-class DirectedDFS {
-    private boolean[] marked;  // marked[v] = true if v is reachable
-    // from source (or sources)
-    private int count;         // number of vertices reachable from s
-
-    /**
-     * Computes the vertices in digraph {@code G} that are
-     * reachable from the source vertex {@code s}.
-     *
-     * @param G the digraph
-     * @param s the source vertex
-     */
-    public DirectedDFS(Digraph G, int s) {
-        marked = new boolean[G.V()];
-        dfs(G, s);
-    }
-
-    /**
-     * Computes the vertices in digraph {@code G} that are
-     * connected to any of the source vertices {@code sources}.
-     *
-     * @param G       the graph
-     * @param sources the source vertices
-     */
-    public DirectedDFS(Digraph G, Iterable<Integer> sources) {
-        marked = new boolean[G.V()];
-        for (int v : sources) {
-            if (!marked[v]) dfs(G, v);
-        }
-    }
-
-    private void dfs(Digraph G, int v) {
-        count++;
-        marked[v] = true;
-        for (int w : G.adj(v)) {
-            if (!marked[w]) dfs(G, w);
-        }
-    }
-
-    /**
-     * Is there a directed path from the source vertex (or any
-     * of the source vertices) and vertex {@code v}?
-     *
-     * @param v the vertex
-     * @return {@code true} if there is a directed path, {@code false} otherwise
-     */
-    public boolean marked(int v) {
-        return marked[v];
-    }
-
-    /**
-     * Returns the number of vertices reachable from the source vertex
-     * (or source vertices).
-     *
-     * @return the number of vertices reachable from the source vertex
-     * (or source vertices)
-     */
-    public int count() {
-        return count;
-    }
-
-
-}
-
-
-/**
- * The {@code Digraph} class represents a directed graph of vertices
- * named 0 through <em>V</em> - 1.
- * It supports the following two primary operations: add an edge to the digraph,
- * iterate over all of the vertices adjacent from a given vertex.
- * Parallel edges and self-loops are permitted.
- * <p>
- * This implementation uses an adjacency-lists representation, which
- * is a vertex-indexed array of {@link List} objects.
- * All operations take constant time (in the worst case) except
- * iterating over the vertices adjacent from a given vertex, which takes
- * time proportional to the number of such vertices.
- * <p>
- * For additional documentation,
- * see <a href="http://algs4.cs.princeton.edu/42digraph">Section 4.2</a> of
- * <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
- *
- * @author Robert Sedgewick
- * @author Kevin Wayne
- */
 
 class Digraph {
     private static final String NEWLINE = System.getProperty("line.separator");
 
     private final int V;           // number of vertices in this digraph
     private int E;                 // number of edges in this digraph
-    private List<Integer>[] adj;    // adj[v] = adjacency list for vertex v
+    private Collection<Integer>[] adj;    // adj[v] = adjacency list for vertex v
     private int[] indegree;        // indegree[v] = indegree of vertex v
 
     /**
@@ -215,11 +234,12 @@ class Digraph {
         this.V = V;
         this.E = 0;
         indegree = new int[V];
-        adj = (List<Integer>[]) new ArrayList[V];
+        adj = (Collection<Integer>[]) new Collection[V];
         for (int v = 0; v < V; v++) {
             adj[v] = new ArrayList<Integer>();
         }
     }
+
 
     /**
      * Initializes a new digraph that is a deep copy of the specified digraph.
@@ -262,10 +282,10 @@ class Digraph {
     }
 
 
-    // throw an IndexOutOfBoundsException unless {@code 0 <= v < V}
+    // throw an IllegalArgumentException unless {@code 0 <= v < V}
     private void validateVertex(int v) {
         if (v < 0 || v >= V)
-            throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V - 1));
+            throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V - 1));
     }
 
     /**
@@ -273,7 +293,7 @@ class Digraph {
      *
      * @param v the tail vertex
      * @param w the head vertex
-     * @throws IndexOutOfBoundsException unless both {@code 0 <= v < V} and {@code 0 <= w < V}
+     * @throws IllegalArgumentException unless both {@code 0 <= v < V} and {@code 0 <= w < V}
      */
     public void addEdge(int v, int w) {
         validateVertex(v);
@@ -288,11 +308,23 @@ class Digraph {
      *
      * @param v the vertex
      * @return the vertices adjacent from vertex {@code v} in this digraph, as an iterable
-     * @throws IndexOutOfBoundsException unless {@code 0 <= v < V}
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
      */
     public Iterable<Integer> adj(int v) {
         validateVertex(v);
         return adj[v];
+    }
+
+    public List<Integer> adjList(int v) {
+        validateVertex(v);
+        Collection<Integer> integers = adj[v];
+        return new ArrayList<>(integers);
+    }
+
+    public Set<Integer> epsilons(int v) {
+        List<Integer> sds = adjList(v);
+        sds.add(v);
+        return new HashSet<>(sds);
     }
 
     /**
@@ -301,7 +333,7 @@ class Digraph {
      *
      * @param v the vertex
      * @return the outdegree of vertex {@code v}
-     * @throws IndexOutOfBoundsException unless {@code 0 <= v < V}
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
      */
     public int outdegree(int v) {
         validateVertex(v);
@@ -314,7 +346,7 @@ class Digraph {
      *
      * @param v the vertex
      * @return the indegree of vertex {@code v}
-     * @throws IndexOutOfBoundsException unless {@code 0 <= v < V}
+     * @throws IllegalArgumentException unless {@code 0 <= v < V}
      */
     public int indegree(int v) {
         validateVertex(v);
@@ -355,7 +387,31 @@ class Digraph {
         return s.toString();
     }
 
+
 }
 
+class DirectedDFS {
+    private boolean[] marked;
 
+    public DirectedDFS(Digraph G, int s) {
+        marked = new boolean[G.V()];
+        dfs(G, s);
+    }
 
+    public DirectedDFS(Digraph G, Iterable<Integer> sources) {
+        marked = new boolean[G.V()];
+        for (int s : sources)
+            if (!marked[s]) dfs(G, s);
+    }
+
+    private void dfs(Digraph G, int v) {
+        marked[v] = true;
+        for (int w : G.adj(v))
+            if (!marked[w]) dfs(G, w);
+    }
+
+    public boolean marked(int v) {
+        return marked[v];
+    }
+
+}
