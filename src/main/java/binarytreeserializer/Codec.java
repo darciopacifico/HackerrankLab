@@ -13,7 +13,7 @@ public class Codec {
         t1.left = t2;
         t1.right = t3;
 
-        t3.left = t4;
+        t3.left = t4; 
         t3.right = t5;
 
         Codec codec = new Codec();
@@ -30,10 +30,37 @@ public class Codec {
 
     // Encodes a tree to a single string.
     public String serialize(TreeNode root) {
-        return "";  
+    	
+    	StringBuilder sb = new StringBuilder();
+    	
+        serialize(sb, root);
+        
+        return sb.toString();
     }
 
-    // Decodes your encoded data to tree.
+    private void serialize(StringBuilder sb, TreeNode root) {
+		
+    	if(root==null) {
+    		sb.append("null");
+    		return;
+    	}
+
+    	
+    	sb.append("(");
+    	
+    	sb.append(root.val);
+    	
+    	sb.append("L=");
+    	serialize(sb, root.left);
+    	
+    	sb.append("R=");
+    	serialize(sb, root.right);
+    
+    	sb.append(")");
+
+	}
+
+	// Decodes your encoded data to tree.
     public TreeNode deserialize(String data) {
         return null;
     }
