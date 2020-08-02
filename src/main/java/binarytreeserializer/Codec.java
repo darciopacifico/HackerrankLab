@@ -1,9 +1,16 @@
 package binarytreeserializer;
 
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 public class Codec {
 
     public static void main(String[] args) {
+        Codec codec = new Codec();
+
+        String val;
+
         TreeNode t1 = new TreeNode(1);
         TreeNode t2 = new TreeNode(2);
         TreeNode t3 = new TreeNode(3);
@@ -13,55 +20,55 @@ public class Codec {
         t1.left = t2;
         t1.right = t3;
 
-        t3.left = t4; 
+        t3.left = t4;
         t3.right = t5;
 
-        Codec codec = new Codec();
-
-        String val = codec.serialize(t1);
-
+        val = codec.serialize(t1);
 
         TreeNode deserialized = codec.deserialize(val);
 
         System.out.println(val);
-
-        System.out.println(deserialized);
+        System.out.println(codec.serialize(deserialized));
     }
 
-    // Encodes a tree to a single string.
     public String serialize(TreeNode root) {
-    	
-    	StringBuilder sb = new StringBuilder();
-    	
-        serialize(sb, root);
-        
-        return sb.toString();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        serialize(stringBuilder, root);
+        return stringBuilder.toString();
     }
 
-    private void serialize(StringBuilder sb, TreeNode root) {
-		
-    	if(root==null) {
-    		sb.append("null");
-    		return;
-    	}
+    private void serialize(StringBuilder stringBuilder, TreeNode root) {
+        if (root == null) {
+            stringBuilder.append("n,");
+        } else {
+            stringBuilder.append(root.val).append(",");
+            serialize(stringBuilder, root.left);
+            serialize(stringBuilder, root.right);
+        }
+    }
 
-    	
-    	sb.append("(");
-    	
-    	sb.append(root.val);
-    	
-    	sb.append("L=");
-    	serialize(sb, root.left);
-    	
-    	sb.append("R=");
-    	serialize(sb, root.right);
-    
-    	sb.append(")");
-
-	}
-
-	// Decodes your encoded data to tree.
     public TreeNode deserialize(String data) {
-        return null;
+
+        String[] items = data.split(",");
+
+        LinkedList<String> listItems = new LinkedList<>(Arrays.asList(items));
+
+        return deserialize(listItems);
+
+    }
+
+    private TreeNode deserialize(LinkedList<String> listItems) {
+
+        String item = listItems.removeFirst();
+
+        if ("n".equals(item)) return null;
+
+        TreeNode node = new TreeNode(new Integer(item));
+
+        node.left = deserialize(listItems);
+        node.right = deserialize(listItems);
+
+        return node;
     }
 }

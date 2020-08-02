@@ -1,4 +1,4 @@
-package binarytreeserializer;
+package diameterbintree;
 
 public class TreeNode {
     int val;
