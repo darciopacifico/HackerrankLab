@@ -1,100 +1,69 @@
 package maxwindowsubstring;
 
-import java.util.HashMap;
-import java.util.Map;
+
+import static java.lang.Integer.MAX_VALUE;
 
 public class Solution {
 
     public static final char A = 'a';
 
     public static void main(String[] args) {
-
-        System.out.println(new Solution().minWindow("aaaaaaaaaaaabbbbbcdd", "abcdd").equals("abbbbbcdd"));
-        System.out.println(new Solution().minWindow("bbaac", "baa").equals("baa"));
-        System.out.println(new Solution().minWindow("aa", "aa").equals("aa"));
-        System.out.println(new Solution().minWindow("a", "aa").equals(""));
-        System.out.println(new Solution().minWindow("bba", "ab").equals("ba"));
-        System.out.println(new Solution().minWindow("ADOBECODEBANC", "ABC").equals("BANC"));
+        System.out.println(new Solution().minWindow("aa", "aa"));
+        System.out.println(new Solution().minWindow("bba", "ab"));
+        System.out.println(new Solution().minWindow("bbaac", "baa"));
+        System.out.println(new Solution().minWindow("aaaaaaaaaaaabbbbbcdd", "abcdd"));
+        System.out.println(new Solution().minWindow("a", "aa"));
+        System.out.println(new Solution().minWindow("ADOBECODEBANC", "ABC"));
         /*
          */
-
     }
 
-
     public String minWindow(String word, String template) {
+        final int letters = 'z' - 'A' + 1;
 
-        int[] countByChar = new int[200];
-        Map<Character, Integer> charSet = new HashMap<>();
+        final char[] wordChars = word.toCharArray();
+        final int[] templateMap = new int[letters];
 
-        int l = 0;
-        int bestL = 0;
-        int bestR = 0;
+        final int[] countMap = new int[letters];
 
-        int desiredStateZero = 0;
-
+        int countKey = template.length();
         for (char c : template.toCharArray()) {
-            countByChar[c]++;
-            desiredStateZero++;
+            templateMap[c - 'A']++;
         }
 
-        for (int r = 0; r < word.length(); r++) {
+        int bestR = MAX_VALUE;
+        int bestL = 0;
 
-            if (desiredStateZero > 0) {
+        int l = 0;
 
-                char c = word.charAt(r);
-                if (countByChar[c]-- > 0) {
-                    desiredStateZero--;
-                }
+        final int maxL = wordChars.length - template.length();
 
-            } else {
-
-                while (desiredStateZero == 0) {
-                    if ((r - l) < (bestR - bestL)) {
+        for (int r = 0; r < wordChars.length; r++) {
+            char c = wordChars[r];
+            if (++countMap[c - 'A'] <= templateMap[c - 'A']) {
+                countKey--;
+                while (countKey == 0 && l <= maxL) {
+                    if (r - l < bestR - bestL) {
                         bestL = l;
-                        bestR = r;
+                        bestR = r + 1;
                     }
-                    char c = word.charAt(l);
-                    if (++countByChar[c] > 0) {
-                        desiredStateZero++;
+
+                    char cL = wordChars[l];
+                    countMap[cL - 'A']--;
+                    if (countMap[cL - 'A'] < templateMap[cL - 'A']) {
+                        countKey++;
                     }
 
                     l++;
                 }
             }
+        }
 
-
+        if (bestR == MAX_VALUE) { // the word var doesn't even contain all chars from the template
+            return "";
         }
 
         return word.substring(bestL, bestR);
-    }
-
-    private boolean possiblyValid(Map<Character, Integer> charSet, Map<Character, Integer> countByChar) {
-        if (charSet.keySet().size() != countByChar.keySet().size()) {
-            return false;
-        }
-
-        for (Character c : countByChar.keySet()) {
-            if (countByChar.get(c) < charSet.get(c)) {
-                return false; // it doesn't have enough c's
-            }
-        }
-
-        return true;
-    }
-
-    private boolean dragR(Map<Character, Integer> charSet, Map<Character, Integer> countByChar, String word, int r) {
-        if (r >= word.length()) return false;
-
-        if (countByChar.keySet().size() < charSet.keySet().size()) return true; // there are less chars than we expect
-
-        for (Character c : countByChar.keySet()) {
-
-            if (countByChar.get(c) < charSet.get(c)) {
-                return true; // it doesn't have enough c's
-            }
-        }
-
-        return false;
     }
 
 
