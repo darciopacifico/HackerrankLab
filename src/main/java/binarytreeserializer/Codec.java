@@ -62,7 +62,7 @@ public class Codec {
 
         String item = listItems.removeFirst();
 
-        if ("n".equals(item)) return null;
+        if ("null".equals(item)) return null;
 
         TreeNode node = new TreeNode(new Integer(item));
 
