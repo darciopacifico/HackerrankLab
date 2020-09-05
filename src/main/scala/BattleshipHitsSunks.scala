@@ -7,16 +7,16 @@ object BattleshipHitsSunks {
 
   def main(args: Array[String]) {
 
-    println(solution(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D 2E"))
-    println(solution(8, "1A 8B,1D 2E", "1D 1E 2D 2E"))
-    println(solution(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D"))
-    println(solution(8, "1A 8B,1D 2E", "1H 8H"))
-    println(solution(8, "1A 8B,1D 2E", "1A 8A"))
-    println(solution(8, "1A 8B,1D 2E", "1A 2E"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D 2E"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1D 1E 2D 2E"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1A 2A 3A 4A 5A 6A 7A 8A 1B 2B 3B 4B 5B 6B 7B 8B 1D 1E 2D"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1H 8H"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1A 8A"))
+    println(solutionRecursive(8, "1A 8B,1D 2E", "1A 2E"))
 
   }
 
-  def solution(n: Int, s: String, t: String): String = {
+  def solutionRecursive(n: Int, s: String, t: String): String = {
     def max(c1: Char, c2: Char): Char = Math.max(c1, c2).toChar
     def min(c1: Char, c2: Char): Char = Math.min(c1, c2).toChar
 
