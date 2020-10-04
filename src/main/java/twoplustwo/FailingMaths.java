@@ -2,10 +2,10 @@ package twoplustwo;
 
 import java.lang.reflect.Field;
 
-public class Solution {
+public class FailingMaths {
     public static void main(String[] args) throws Exception {
         abracadabra();
-        System.out.printf("%d", 2 + 2);
+        System.out.printf("2 + 2 = %d", 2 + 2);
     }
 
     private static void abracadabra() throws NoSuchFieldException, IllegalAccessException {
