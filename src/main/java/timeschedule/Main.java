@@ -84,7 +84,7 @@ public class Main {
             }
 
 
-            return totalTime;
+            return 0;
 
         }
 
